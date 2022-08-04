@@ -1,5 +1,5 @@
 class Api::V1::StoriesController < Api::V1::BaseController
-  before_action :set_story, only: %i[show update]
+  before_action :set_story, only: %i[show update destroy]
 
   def index
     @stories = Story.order(:id)
@@ -15,6 +15,20 @@ class Api::V1::StoriesController < Api::V1::BaseController
     end
   end
 
+  def create
+    @story = Story.new(story_params)
+    if @story.save
+      render :show, status: :created
+    else
+      render_error
+    end
+  end
+
+  def destroy
+    @story.destroy
+    head :no_content
+  end
+
   private
 
   def set_story
@@ -22,11 +36,10 @@ class Api::V1::StoriesController < Api::V1::BaseController
   end
 
   def story_params
-    params.require(:story).permit(:id, :title, :body)
+    params.require(:story).permit(:title, :body)
   end
 
   def render_error
-    render json: { errors: @story.error.full_messages },
-      status: :unprocessable_entity
+    render json: { errors: @story.error.full_messages }, status: :unprocessable_entity
   end
 end
